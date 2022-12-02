@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 //use App\Http\Controllers\UserCollectionController;
 
 /*
@@ -15,16 +16,48 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post(  '/login', [App\Http\Controllers\UserController::class, 'login']);
-Route::get('logout',['middleware' => 'auth:sanctum',
-    'uses' => 'App\Http\Controllers\UserController@logout'
-   ]);
 
-Route::post('register',[
+Route::prefix("collection")->group(function () {
+
+    Route::group(['middleware' => ['auth:sanctum']], function () {
+
+        Route::post('creat', [App\Http\Controllers\CollectionController::class, 'store']);
+        Route::post('add_file_to_collection', [App\Http\Controllers\CollectionController::class, 'add_file_to_collection']);
+        Route::post('delete_file_from_collection', [App\Http\Controllers\CollectionController::class, 'delete_file_from_collection']);
+
+        // Route::post('add_user_to_collection', [App\Http\Controllers\CollectionController::class, 'add_user_to_collection']);
+        //Route::post('delete_user_from_collection', [App\Http\Controllers\CollectionController::class, 'delete_user_from_collection']);
+//        Route::post('destroy', [App\Http\Controllers\CollectionController::class, 'destroy']);
+
+    });
+
+
+    Route::group(['middleware' => ['Collection_owner']], function () {
+
+        Route::post('add_user_to_collection', [App\Http\Controllers\CollectionController::class, 'add_user_to_collection']);
+        Route::post('delete_user_from_collection', [App\Http\Controllers\CollectionController::class, 'delete_user_from_collection']);
+        Route::post('destroy', [App\Http\Controllers\CollectionController::class, 'destroy']);
+
+    });
+
+
+});
+
+
+Route::get('logout', ['middleware' => 'auth:sanctum',
+    'uses' => 'App\Http\Controllers\UserController@logout'
+]);
+
+Route::post('/login', [App\Http\Controllers\UserController::class, 'login']);
+Route::get('logout', ['middleware' => 'auth:sanctum',
+    'uses' => 'App\Http\Controllers\UserController@logout'
+]);
+
+Route::post('register', [
     'uses' => 'App\Http\Controllers\UserController@register'
 ]);
 
-Route::get('OwnerToCollection',[
+Route::get('OwnerToCollection', [
     'middleware' => 'Role:owner',
     'uses' => 'App\Http\Controllers\UserCollectionController@OwnerToCollection'
 ]);

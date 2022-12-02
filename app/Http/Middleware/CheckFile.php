@@ -17,7 +17,6 @@ class CheckFile
      */
     public function handle(Request $request, Closure $next,$role)
     {
-
      $user= Auth()->user()->role;
 
         if ($user==$role) {

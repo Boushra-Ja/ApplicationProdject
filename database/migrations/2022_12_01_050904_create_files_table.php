@@ -15,6 +15,8 @@ return new class extends Migration
             $table->integer('status_id')->unsigned();
             $table->foreign('status_id')->references('id')->on('file_statuses')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
+
         });
     }
 
