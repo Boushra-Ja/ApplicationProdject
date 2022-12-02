@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
+/////bayan
 Route::prefix("collection")->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum']], function () {
@@ -38,7 +39,7 @@ Route::prefix("collection")->group(function () {
 
 });
 
-
+/////batool
 Route::get('logout', ['middleware' => 'auth:sanctum',
     'uses' => 'App\Http\Controllers\UserController@logout'
 ]);
@@ -61,3 +62,11 @@ Route::get('OwnerToCollection', [
 //    'middleware' => 'Role:owner',
 //    'uses' => 'App\Http\Controllers\UserCollectionController@index'
 //]);
+
+/////boshra
+//create and delete and display file
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::resource('file' , FileController::class)->except('edit' , 'create') ;
+
+});
+

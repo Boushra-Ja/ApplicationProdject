@@ -9,21 +9,20 @@ return new class extends Migration
 
     public function up()
     {
-        Schema::create('files', function (Blueprint $table) {
+        Schema::create('file_operations', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name') ;
-            $table->integer('status_id')->unsigned();
-            $table->foreign('status_id')->references('id')->on('file_statuses')->onDelete('cascade');
+            $table->integer('file_id')->unsigned();
             $table->integer('user_id')->unsigned();
+            $table->integer('op_id')->unsigned();
+            $table->foreign('file_id')->references('id')->on('files')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('op_id')->references('id')->on('operation_types')->onDelete('cascade');
             $table->timestamps();
-            $table->softDeletes();
-
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('files');
+        Schema::dropIfExists('file_operations');
     }
 };

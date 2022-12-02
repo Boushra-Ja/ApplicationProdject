@@ -14,6 +14,7 @@ class Collection extends Model
     protected $fillable = [
         'id',
         'name',
+        'status'
     ];
 
     public function users()
