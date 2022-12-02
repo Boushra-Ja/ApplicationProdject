@@ -2,27 +2,27 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\UserCollection;
 use App\Http\Requests\StoreUserCollectionRequest;
 use App\Http\Requests\UpdateUserCollectionRequest;
+use Illuminate\Support\Facades\Auth;
 
 class UserCollectionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function __construct()
     {
-        //
+        $this->middleware(["auth:sanctum"])->only(["owner"]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
+    public function OwnerToCollection()
+    {
+        dd("you are owner");
+
+    }
+
+
     public function create()
     {
         //
