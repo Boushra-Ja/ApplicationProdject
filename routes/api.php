@@ -24,11 +24,6 @@ Route::prefix("collection")->group(function () {
         Route::post('creat', [App\Http\Controllers\CollectionController::class, 'store']);
         Route::post('add_file_to_collection', [App\Http\Controllers\CollectionController::class, 'add_file_to_collection']);
         Route::post('delete_file_from_collection', [App\Http\Controllers\CollectionController::class, 'delete_file_from_collection']);
-
-        // Route::post('add_user_to_collection', [App\Http\Controllers\CollectionController::class, 'add_user_to_collection']);
-        //Route::post('delete_user_from_collection', [App\Http\Controllers\CollectionController::class, 'delete_user_from_collection']);
-//        Route::post('destroy', [App\Http\Controllers\CollectionController::class, 'destroy']);
-
     });
 
 
