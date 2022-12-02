@@ -4,6 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @property $name
+ */
 class StoreCollectionRequest extends FormRequest
 {
     /**
@@ -13,7 +16,8 @@ class StoreCollectionRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
+
     }
 
     /**
@@ -27,4 +31,5 @@ class StoreCollectionRequest extends FormRequest
             //
         ];
     }
+
 }
