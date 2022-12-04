@@ -16,7 +16,7 @@ class FileController extends BaseController
     public function index()
     {
         $user_id = Auth::id();
-        $files = File::where('user_id', $user_id)->get();
+        $files = File::where('owner_id', $user_id)->get();
         if ($files) {
             return $this->sendResponse(FileResource::collection($files), "this is all files");
         }
@@ -36,7 +36,7 @@ class FileController extends BaseController
             $file = File::create([
                 'name' => $newfileName,
                 'status_id' => FileStatus::where('status', 'حر')->value('id'),
-                'user_id' => Auth::id(),
+                'owner_id' => Auth::id(),
             ]);
             return $this->sendResponse($file, 'success in create file');
         }
