@@ -67,6 +67,6 @@ Route::get('OwnerToCollection', [
 //create and delete and display file
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::resource('file' , FileController::class)->except('edit' , 'create') ;
-
+    Route::post('file/check_in/{id}' , [FileController::class , 'check_in']) ;
 });
 
