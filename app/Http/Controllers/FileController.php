@@ -7,6 +7,7 @@ use App\Models\File;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\UpdateFileRequest;
 use App\Http\Resources\FileResource;
+use App\Models\FileOperation;
 use App\Models\FileStatus;
 use Illuminate\Support\Facades\Auth;
 
@@ -67,7 +68,7 @@ class FileController extends BaseController
         return $this->sendErrors('error', 'error in delete file');
     }
 
-    public function check_in($id)
+    public function check_in($id , $user_id)
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
@@ -76,6 +77,15 @@ class FileController extends BaseController
                     'status_id' => FileStatus::where('status', 'محجوز')->value('id')
                 ]
             );
+
+            FileOperation::create([
+
+                'file_id' => $id ,
+                'user_id' => $user_id ,
+                'op_id' => FileOperation::where('type' , 'حجز')->value('id')
+            ]);
+
+
             return $this->sendResponse('', 'check in success');
         }
         return $this->sendErrors('error', 'the file is already rerserved');
