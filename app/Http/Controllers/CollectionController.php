@@ -116,7 +116,7 @@ class CollectionController extends Controller
 
     }
 
-    public function add_file_to_public_collection(){
+    public function add_file_to_public_collection(Request $request){
 
     }
 

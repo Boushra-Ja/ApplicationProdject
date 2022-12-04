@@ -65,7 +65,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'Role' => \App\Http\Middleware\CheckFile::class,
         'Collection_owner' => \App\Http\Middleware\collectionOwner::class,
-
+        'public_collection' => \App\Http\Middleware\PublicCollection::class,
 
     ];
 }
