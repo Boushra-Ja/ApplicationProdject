@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCollectionRequest;
 use App\Http\Requests\UpdateCollectionRequest;
 use App\Models\CollectionFile;
 use App\Models\File;
+use App\Models\FileStatus;
 use App\Models\UserCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,7 @@ class CollectionController extends Controller
 
     public function __construct()
     {
-        $this->middleware(["auth:sanctum"])->only(["add_user_to_collection", "delete_user_from_collection", "destroy"]);
+        $this->middleware(["auth:sanctum"])->only(["add_user_to_collection", "delete_user_from_collection", "destroy", "add_file_to_collection", "delete_file_from_collection"]);
     }
 
     /**
@@ -29,6 +30,7 @@ class CollectionController extends Controller
 
         $collection = Collection::create([
             'name' => $request->name,
+            'status' => $request->status
         ]);
 
         if ($collection) {
@@ -46,36 +48,35 @@ class CollectionController extends Controller
 
     public function add_file_to_collection($request)
     {
-        $has_user = UserCollection::where('collection_id', '=', $request->collection_id)->where('user_id', '=', $request->user_id)->first();
-        if (Auth::id() == $request->owner && $has_user) {
-            $collection_file = CollectionFile::create([
-                'collection_id' => $request->collection_id,
-                'file_id' => $request->file_id,
-            ]);
+        $collection_file = CollectionFile::create([
+            'collection_id' => $request->collection_id,
+            'file_id' => $request->file_id,
+        ]);
 
-            if ($collection_file) {
-                return response()->json($collection_file, 200);
+        if ($collection_file) {
+            return response()->json($collection_file, 200);
 
-            } else {
-                return response()->json("erorr", 201);
-            }
+        } else {
+            return response()->json("erorr", 201);
         }
 
     }
 
     public function delete_file_from_collection($request)
     {
-        if (Auth::id() == $request->owner) {
-            $collection_file = CollectionFile::where('collection_id', '=', $request->collection_id)->where('file_id', '=', $request->file_id)->first()->delete();
+        if ("محجوز" == FileStatus::where('id', File::where('id', CollectionFile::where($request->collection_id, 'collection_id')->value('file_id'))->value('status_id'))->value('status')){
 
-
-            if ($collection_file) {
-                return response()->json($collection_file, 200);
-
-            } else {
-                return response()->json("erorr", 201);
-            }
         }
+
+
+            $collection_file = CollectionFile::where('collection_id', '=', $request->collection_id)->where('file_id', '=', $request->file_id)->first()->delete();
+        if ($collection_file) {
+            return response()->json($collection_file, 200);
+
+        } else {
+            return response()->json("erorr", 201);
+        }
+
 
     }
 
@@ -113,10 +114,6 @@ class CollectionController extends Controller
                 return response()->json("erorr", 201);
             }
         }
-
-    }
-
-    public function add_file_to_public_collection(Request $request){
 
     }
 

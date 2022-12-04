@@ -12,12 +12,12 @@ class UserController extends Controller
 {
     function register (Request $request) {
         $valid = $request->validate([
-            'name' => 'required ',
+            'name' ,
             'email' => 'required | unique:users',
-            'role' => 'required',
-            'phone_number' => 'required',
+            'role'  ,
+            'phone_number' ,
             'username'=> 'required | unique:users',
-            'image'=> 'required',
+            'image',
             'password' => 'min:6|required_with:password_confirmation|same:password_confirmation',
             'password_confirmation' => 'min:6'
            ]);
