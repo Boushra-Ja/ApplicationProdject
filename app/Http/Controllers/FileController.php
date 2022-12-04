@@ -66,4 +66,21 @@ class FileController extends BaseController
         }
         return $this->sendErrors('error', 'error in delete file');
     }
+
+    public function check_in($id)
+    {
+
+        if (File::where('id', $id)->where('status_id', FileStatus::where('status', 'حر')->value('id'))) {
+            File::where('id', $id)->update(
+                [
+                    'status_id' => FileStatus::where('status', 'محجوز')->value('id')
+                ]
+            );
+            return $this->sendResponse('', 'check in success');
+        }
+        return $this->sendErrors('error', 'the file is already rerserved');
+
+    }
+
+
 }
