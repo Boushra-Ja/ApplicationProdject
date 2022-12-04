@@ -23,8 +23,14 @@ Route::prefix("collection")->group(function () {
     Route::group(['middleware' => ['auth:sanctum']], function () {
 
         Route::post('creat', [App\Http\Controllers\CollectionController::class, 'store']);
+
+    });
+
+    Route::group(['middleware' => ['public_collection']], function () {
+
         Route::post('add_file_to_collection', [App\Http\Controllers\CollectionController::class, 'add_file_to_collection']);
         Route::post('delete_file_from_collection', [App\Http\Controllers\CollectionController::class, 'delete_file_from_collection']);
+
     });
 
 
