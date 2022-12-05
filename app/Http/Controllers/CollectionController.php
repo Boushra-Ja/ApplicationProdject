@@ -124,10 +124,10 @@ class CollectionController extends Controller
             if ($a == 0) {
                 $user_collection1 = UserCollection::where('id', '=', $user_collection->id)->delete();
                 if ($user_collection1) {
-                    return response()->json($user_collection1, 200);
+                    return "yse";
 
                 } else {
-                    return response()->json("erorr", 201);
+                    return "no";
                 }
             }
 
@@ -182,7 +182,7 @@ class CollectionController extends Controller
 
     public function show_all_users_in_collection(Request $request)
     {
-        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $request->collection_id)->get('user_id'))->get();
+        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $request->collection_id)->get('property','user')->get('user_id'))->get();
         return $user_collection;
     }
 
