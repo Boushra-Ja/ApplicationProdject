@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateCollectionRequest;
 use App\Models\CollectionFile;
 use App\Models\File;
 use App\Models\FileStatus;
+use App\Models\User;
 use App\Models\UserCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -165,6 +166,12 @@ class CollectionController extends Controller
 
         $my_collection_file = CollectionFile::where('collection_id',$collection_id)->get();
         return response()->json(File_collection_resource::collection($my_collection_file), 200);
+    }
+
+    public function show_all_users_not_in_collection(){
+        $user_collection=User::whereIn('id',UserCollection::where('collection_id',1)->get('user_id'))->get('id');
+        $users=User::whereNotIn('id',$user_collection)->get();
+        return $users;
     }
 
 }
