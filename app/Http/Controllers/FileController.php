@@ -10,6 +10,7 @@ use App\Http\Resources\CollectionResource;
 use App\Http\Resources\FileResource;
 use App\Models\FileOperation;
 use App\Models\FileStatus;
+use App\Models\OperationType;
 use App\Models\UserCollection;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,7 +19,7 @@ class FileController extends BaseController
 
     public function index()
     {
-        $user_id = 1;//Auth::id();
+        $user_id = Auth::id();
         $files = File::where('owner_id', $user_id)->get();
         if ($files) {
             return $this->sendResponse(FileResource::collection($files), "this is all files");
@@ -31,7 +32,7 @@ class FileController extends BaseController
     {
 
         $newfileName = $request->name . '.' . $request->file->extension();
-        $user_id = 1 ; //Auth::id();
+        $user_id = Auth::id();
         if (File::where('name', $newfileName)->first()) {
             return $this->sendErrors([], 'the file name is exist ');
         } else {
@@ -71,7 +72,7 @@ class FileController extends BaseController
         return $this->sendErrors('error', 'error in delete file');
     }
 
-    public function check_in($id , $user_id)
+    public function check_in($id)
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
@@ -84,8 +85,8 @@ class FileController extends BaseController
             FileOperation::create([
 
                 'file_id' => $id ,
-                'user_id' => $user_id ,
-                'op_id' => FileOperation::where('type' , 'حجز')->value('id')
+                'user_id' => Auth::id() ,
+                'op_id' => OperationType::where('type' , 'حجز')->value('id')
             ]);
 
 
@@ -112,7 +113,6 @@ class FileController extends BaseController
 
     public function myCollection()
     {
-       // $user_id = Auth::id() ;
         return $this->sendResponse(new CollectionResource([]) , 'success') ;
     }
 

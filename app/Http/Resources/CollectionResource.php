@@ -11,7 +11,7 @@ class CollectionResource extends JsonResource
 {
     public function toArray($request)
     {
-        $user_id = 1 ; //Auth::id() ;
+        $user_id = Auth::id() ;
 
         return [
 
