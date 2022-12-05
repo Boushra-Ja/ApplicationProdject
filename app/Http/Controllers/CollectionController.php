@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\File_collection_resource;
+use App\Http\Resources\user_collection;
 use App\Models\Collection;
 use App\Http\Requests\StoreCollectionRequest;
 use App\Http\Requests\UpdateCollectionRequest;
@@ -11,6 +13,7 @@ use App\Models\FileStatus;
 use App\Models\UserCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use PhpParser\Node\Stmt\While_;
 
 class CollectionController extends Controller
 {
@@ -64,12 +67,8 @@ class CollectionController extends Controller
 
     public function delete_file_from_collection($request)
     {
-        if ("محجوز" == FileStatus::where('id', File::where('id', CollectionFile::where($request->collection_id, 'collection_id')->value('file_id'))->value('status_id'))->value('status')){
 
-        }
-
-
-            $collection_file = CollectionFile::where('collection_id', '=', $request->collection_id)->where('file_id', '=', $request->file_id)->first()->delete();
+        $collection_file = CollectionFile::where('collection_id', '=', $request->collection_id)->where('file_id', '=', $request->file_id)->first()->delete();
         if ($collection_file) {
             return response()->json($collection_file, 200);
 
@@ -104,23 +103,68 @@ class CollectionController extends Controller
 
     public function delete_user_from_collection(Request $request)
     {
+
         $user_collection = UserCollection::where('collection_id', '=', $request->collection_id)->where('user_id', '=', $request->user_id)->first();
         if ($user_collection) {
-            $user_collection1 = UserCollection::where('id', '=', $user_collection->id)->delete();
-            if ($user_collection1) {
-                return response()->json($user_collection1, 200);
+            $a = 0;
+            $files = File::where('id', CollectionFile::where($request->collection_id, 'collection_id')->value('file_id'))->get();
 
-            } else {
-                return response()->json("erorr", 201);
+            foreach ($files as $item) {
+                if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
+
+                    if ($item->user_id == $request->user_id) {
+                        $a = 1;
+                        break;
+                    }
+
+                }
             }
+
+            if ($a == 0) {
+                $user_collection1 = UserCollection::where('id', '=', $user_collection->id)->delete();
+                if ($user_collection1) {
+                    return response()->json($user_collection1, 200);
+
+                } else {
+                    return response()->json("erorr", 201);
+                }
+            }
+
         }
 
     }
 
-    public function destroy(Request $collection)
+    public function destroy(Request $request)
     {
 
-        Collection::where('id', '=', $collection->collection_id)->first()->delete();
+        $a = 0;
+        $files = File::where('id', CollectionFile::where($request->collection_id, 'collection_id')->value('file_id'))->get();
+
+        foreach ($files as $item) {
+            if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
+                $a = 1;
+                break;
+
+            }
+        }
+
+        if ($a == 0)
+            Collection::where('id', '=', $request->collection_id)->first()->delete();
 
     }
+
+    public function show_my_collection()
+    {
+        $user_collection=UserCollection::where('user_id',Auth::id())->where('property', 'owner')->get();
+
+        return response()->json(user_collection::collection($user_collection), 200);
+    }
+
+    public function show_my_collection_file($collection_id)
+    {
+
+        $my_collection_file = CollectionFile::where('collection_id',$collection_id)->get();
+        return response()->json(File_collection_resource::collection($my_collection_file), 200);
+    }
+
 }

@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('collections', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->Integer('status');
+            $table->string('status');
             $table->timestamps();
         });
     }
