@@ -23,6 +23,9 @@ Route::prefix("collection")->group(function () {
     Route::group(['middleware' => ['auth:sanctum']], function () {
 
         Route::post('creat', [App\Http\Controllers\CollectionController::class, 'store']);
+        Route::get('show_my_collection', [App\Http\Controllers\CollectionController::class, 'show_my_collection']);
+        Route::get('show_my_collection_file\{collection_id}', [App\Http\Controllers\CollectionController::class, 'show_my_collection_file']);
+
 
     });
 
@@ -42,8 +45,6 @@ Route::prefix("collection")->group(function () {
 
     });
 
-    Route::get('show_my_collection', [App\Http\Controllers\CollectionController::class, 'show_my_collection']);
-    Route::get('show_my_collection_file\{collection_id}', [App\Http\Controllers\CollectionController::class, 'show_my_collection_file']);
 
 
 

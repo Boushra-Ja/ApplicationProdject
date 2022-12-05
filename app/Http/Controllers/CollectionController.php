@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\File_collection_resource;
+use App\Http\Resources\user_collection;
 use App\Models\Collection;
 use App\Http\Requests\StoreCollectionRequest;
 use App\Http\Requests\UpdateCollectionRequest;
@@ -154,9 +155,9 @@ class CollectionController extends Controller
 
     public function show_my_collection()
     {
+        $user_collection=UserCollection::where('user_id',Auth::id())->where('property', 'owner')->get();
 
-        $my_collection = UserCollection::where('user_id', Auth::id())->where('property', 'owner')->get();
-        return response()->json($my_collection, 200);
+        return response()->json(user_collection::collection($user_collection), 200);
     }
 
     public function show_my_collection_file($collection_id)
