@@ -139,7 +139,8 @@ class CollectionController extends Controller
     {
 
         $a = 0;
-        $files = File::where('id', CollectionFile::where($request->collection_id, 'collection_id')->value('file_id'))->get();
+        $collection_file = CollectionFile::where('collection_id', $request->collection_id)->get('file_id');
+        $files = File::whereIn('id', $collection_file)->get();
         if ($files) {
             foreach ($files as $item) {
                 if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
@@ -150,8 +151,11 @@ class CollectionController extends Controller
             }
         }
 
-        if ($a == 0)
+        if ($a == 0) {
             Collection::where('id', '=', $request->collection_id)->first()->delete();
+            return "yes";
+        }
+        return "no";
 
     }
 
