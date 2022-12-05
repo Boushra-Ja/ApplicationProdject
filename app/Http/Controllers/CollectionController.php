@@ -106,9 +106,9 @@ class CollectionController extends Controller
     {
 
         $user_collection = UserCollection::where('collection_id', '=', $request->collection_id)->where('user_id', '=', $request->user_id)->first();
-        if ($user_collection) {
             $a = 0;
-            $files = File::where('id', CollectionFile::where($request->collection_id, 'collection_id')->value('file_id'))->get();
+            $files = File::whereIn('id', CollectionFile::where('collection_id',$request->collection_id)->get('file_id'))->get();
+
 
             foreach ($files as $item) {
                 if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
@@ -131,7 +131,7 @@ class CollectionController extends Controller
                 }
             }
 
-        }
+
 
     }
 

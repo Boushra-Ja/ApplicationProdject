@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Collection;
 use App\Models\UserCollection;
 use Closure;
 use Illuminate\Http\Request;
@@ -22,7 +23,8 @@ class PublicCollection
             return $next($request);
         else {
             $has_user = UserCollection::where('collection_id', '=', $request->collection_id)->where('user_id', '=', $request->user_id)->first();
-            if (Auth::id() == $request->owner && $has_user) {
+            $collection=UserCollection::where('collection_id','=', $request->collection_id)->where('property','owner')->value('user_id');
+            if (Auth::id() == $collection && $has_user) {
                 return $next($request);
             }
             else
