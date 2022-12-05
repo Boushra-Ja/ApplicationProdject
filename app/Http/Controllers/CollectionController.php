@@ -140,12 +140,13 @@ class CollectionController extends Controller
 
         $a = 0;
         $files = File::where('id', CollectionFile::where($request->collection_id, 'collection_id')->value('file_id'))->get();
+        if ($files) {
+            foreach ($files as $item) {
+                if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
+                    $a = 1;
+                    break;
 
-        foreach ($files as $item) {
-            if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
-                $a = 1;
-                break;
-
+                }
             }
         }
 
@@ -156,21 +157,22 @@ class CollectionController extends Controller
 
     public function show_my_collection()
     {
-        $user_collection=UserCollection::where('user_id',Auth::id())->where('property', 'owner')->get();
+        $user_collection = UserCollection::where('user_id', Auth::id())->where('property', 'owner')->get();
 
         return response()->json(user_collection::collection($user_collection), 200);
     }
 
-    public function show_my_collection_file($collection_id)
+    public function show_my_collection_file(Request $request)
     {
 
-        $my_collection_file = CollectionFile::where('collection_id',$collection_id)->get();
+        $my_collection_file = CollectionFile::where('collection_id', $request->collection_id)->get();
         return response()->json(File_collection_resource::collection($my_collection_file), 200);
     }
 
-    public function show_all_users_not_in_collection(){
-        $user_collection=User::whereIn('id',UserCollection::where('collection_id',1)->get('user_id'))->get('id');
-        $users=User::whereNotIn('id',$user_collection)->get();
+    public function show_all_users_not_in_collection(Request $request)
+    {
+        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $request->collection_id)->get('user_id'))->get('id');
+        $users = User::whereNotIn('id', $user_collection)->get();
         return $users;
     }
 
