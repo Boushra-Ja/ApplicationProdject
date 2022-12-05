@@ -65,7 +65,7 @@ class FileController extends BaseController
 
     public function destroy($id)
     {
-        if (File::where('id', $id)->where('status_id', FileStatus::where('status', 'حر')->value('id'))) {
+        if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
             File::where('id', $id)->delete();
             return $this->sendResponse('', 'the file deleted successfully');
         }
@@ -105,6 +105,13 @@ class FileController extends BaseController
                     'status_id' => FileStatus::where('status', 'حر')->value('id')
                 ]
             );
+
+            FileOperation::create([
+
+                'file_id' => $id ,
+                'user_id' => Auth::id() ,
+                'op_id' => OperationType::where('type' , 'الغاء حجز')->value('id')
+            ]);
             return $this->sendResponse('', 'check out success');
         }
         return $this->sendErrors('error', 'the file not rerserved');
