@@ -180,4 +180,11 @@ class CollectionController extends Controller
         return $users;
     }
 
+    public function show_all_users_in_collection(Request $request)
+    {
+        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $request->collection_id)->get('user_id'))->get('id');
+        return $user_collection;
+    }
+
+
 }

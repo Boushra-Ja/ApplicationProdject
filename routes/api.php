@@ -26,6 +26,7 @@ Route::prefix("collection")->group(function () {
         Route::get('show_my_collection', [App\Http\Controllers\CollectionController::class, 'show_my_collection']);
         Route::post('show_my_collection_file', [App\Http\Controllers\CollectionController::class, 'show_my_collection_file']);
         Route::post('show_all_users_not_in_collection', [App\Http\Controllers\CollectionController::class, 'show_all_users_not_in_collection']);
+        Route::post('show_all_users_in_collection', [App\Http\Controllers\CollectionController::class, 'show_all_users_in_collection']);
 
 
     });
@@ -45,8 +46,6 @@ Route::prefix("collection")->group(function () {
         Route::post('destroy', [App\Http\Controllers\CollectionController::class, 'destroy']);
 
     });
-
-
 
 
 });
@@ -78,9 +77,9 @@ Route::get('OwnerToCollection', [
 /////boshra
 //create && delete && display file && check_in && check_out
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::post('file/check_in/{id}' , [FileController::class , 'check_in']) ;
-    Route::post('file/check_out/{id}' , [FileController::class , 'check_out']) ;
-    Route::resource('file' , FileController::class)->except('edit' , 'create') ;
-    Route::get('mycollection', [FileController::class ,'myCollection']);
+    Route::post('file/check_in/{id}', [FileController::class, 'check_in']);
+    Route::post('file/check_out/{id}', [FileController::class, 'check_out']);
+    Route::resource('file', FileController::class)->except('edit', 'create');
+    Route::get('mycollection', [FileController::class, 'myCollection']);
 
 });
