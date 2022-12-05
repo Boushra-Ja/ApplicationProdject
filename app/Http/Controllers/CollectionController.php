@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateCollectionRequest;
 use App\Models\CollectionFile;
 use App\Models\File;
 use App\Models\FileStatus;
+use App\Models\User;
 use App\Models\UserCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -105,9 +106,9 @@ class CollectionController extends Controller
     {
 
         $user_collection = UserCollection::where('collection_id', '=', $request->collection_id)->where('user_id', '=', $request->user_id)->first();
-        if ($user_collection) {
             $a = 0;
-            $files = File::where('id', CollectionFile::where($request->collection_id, 'collection_id')->value('file_id'))->get();
+            $files = File::whereIn('id', CollectionFile::where('collection_id',$request->collection_id)->get('file_id'))->get();
+
 
             foreach ($files as $item) {
                 if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
@@ -123,14 +124,14 @@ class CollectionController extends Controller
             if ($a == 0) {
                 $user_collection1 = UserCollection::where('id', '=', $user_collection->id)->delete();
                 if ($user_collection1) {
-                    return response()->json($user_collection1, 200);
+                    return "yse";
 
                 } else {
-                    return response()->json("erorr", 201);
+                    return "no";
                 }
             }
 
-        }
+
 
     }
 
@@ -138,33 +139,59 @@ class CollectionController extends Controller
     {
 
         $a = 0;
-        $files = File::where('id', CollectionFile::where($request->collection_id, 'collection_id')->value('file_id'))->get();
+        $collection_file = CollectionFile::where('collection_id', $request->collection_id)->get('file_id');
+        $files = File::whereIn('id', $collection_file)->get();
+        if ($files) {
+            foreach ($files as $item) {
+                if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
+                    $a = 1;
+                    break;
 
-        foreach ($files as $item) {
-            if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
-                $a = 1;
-                break;
-
+                }
             }
         }
 
-        if ($a == 0)
+        if ($a == 0) {
             Collection::where('id', '=', $request->collection_id)->first()->delete();
+            return "yes";
+        }
+        return "no";
 
     }
 
     public function show_my_collection()
     {
-        $user_collection=UserCollection::where('user_id',Auth::id())->where('property', 'owner')->get();
+        $user_collection = UserCollection::where('user_id', Auth::id())->where('property', 'owner')->get();
 
         return response()->json(user_collection::collection($user_collection), 200);
     }
 
-    public function show_my_collection_file($collection_id)
+    public function show_all_collection()
+    {
+        $user_collection = UserCollection::where('user_id', Auth::id())->where('property', 'user')->get();
+
+        return response()->json(user_collection::collection($user_collection), 200);
+    }
+
+    public function show_my_collection_file(Request $request)
     {
 
-        $my_collection_file = CollectionFile::where('collection_id',$collection_id)->get();
+        $my_collection_file = CollectionFile::where('collection_id', $request->collection_id)->get();
         return response()->json(File_collection_resource::collection($my_collection_file), 200);
     }
+
+    public function show_all_users_not_in_collection(Request $request)
+    {
+        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $request->collection_id)->get('user_id'))->get('id');
+        $users = User::whereNotIn('id', $user_collection)->get();
+        return $users;
+    }
+
+    public function show_all_users_in_collection(Request $request)
+    {
+        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $request->collection_id)->where('property','user')->get('user_id'))->get();
+        return $user_collection;
+    }
+
 
 }
