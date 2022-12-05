@@ -6,9 +6,12 @@ use App\Http\Controllers\API\BaseController;
 use App\Models\File;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\UpdateFileRequest;
+use App\Http\Resources\CollectionResource;
 use App\Http\Resources\FileResource;
 use App\Models\FileOperation;
 use App\Models\FileStatus;
+use App\Models\OperationType;
+use App\Models\UserCollection;
 use Illuminate\Support\Facades\Auth;
 
 class FileController extends BaseController
@@ -29,7 +32,7 @@ class FileController extends BaseController
     {
 
         $newfileName = $request->name . '.' . $request->file->extension();
-
+        $user_id = Auth::id();
         if (File::where('name', $newfileName)->first()) {
             return $this->sendErrors([], 'the file name is exist ');
         } else {
@@ -37,7 +40,8 @@ class FileController extends BaseController
             $file = File::create([
                 'name' => $newfileName,
                 'status_id' => FileStatus::where('status', 'حر')->value('id'),
-                'owner_id' => Auth::id(),
+                'owner_id' => $user_id,
+                'user_id' => $user_id
             ]);
             return $this->sendResponse($file, 'success in create file');
         }
@@ -68,7 +72,7 @@ class FileController extends BaseController
         return $this->sendErrors('error', 'error in delete file');
     }
 
-    public function check_in($id , $user_id)
+    public function check_in($id)
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
@@ -81,8 +85,8 @@ class FileController extends BaseController
             FileOperation::create([
 
                 'file_id' => $id ,
-                'user_id' => $user_id ,
-                'op_id' => FileOperation::where('type' , 'حجز')->value('id')
+                'user_id' => Auth::id() ,
+                'op_id' => OperationType::where('type' , 'حجز')->value('id')
             ]);
 
 
@@ -107,5 +111,9 @@ class FileController extends BaseController
 
     }
 
+    public function myCollection()
+    {
+        return $this->sendResponse(new CollectionResource([]) , 'success') ;
+    }
 
 }

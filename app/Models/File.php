@@ -13,7 +13,7 @@ class File extends Model
     protected $fillable = [
         'id',
         'name',
-        'status_id','user_id'
+        'status_id','user_id' ,'owner_id'
     ];
 
     public function collections()
