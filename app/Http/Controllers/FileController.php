@@ -6,9 +6,11 @@ use App\Http\Controllers\API\BaseController;
 use App\Models\File;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\UpdateFileRequest;
+use App\Http\Resources\CollectionResource;
 use App\Http\Resources\FileResource;
 use App\Models\FileOperation;
 use App\Models\FileStatus;
+use App\Models\UserCollection;
 use Illuminate\Support\Facades\Auth;
 
 class FileController extends BaseController
@@ -16,7 +18,7 @@ class FileController extends BaseController
 
     public function index()
     {
-        $user_id = Auth::id();
+        $user_id = 1;//Auth::id();
         $files = File::where('owner_id', $user_id)->get();
         if ($files) {
             return $this->sendResponse(FileResource::collection($files), "this is all files");
@@ -29,7 +31,7 @@ class FileController extends BaseController
     {
 
         $newfileName = $request->name . '.' . $request->file->extension();
-
+        $user_id = 1 ; //Auth::id();
         if (File::where('name', $newfileName)->first()) {
             return $this->sendErrors([], 'the file name is exist ');
         } else {
@@ -37,7 +39,8 @@ class FileController extends BaseController
             $file = File::create([
                 'name' => $newfileName,
                 'status_id' => FileStatus::where('status', 'حر')->value('id'),
-                'owner_id' => Auth::id(),
+                'owner_id' => $user_id,
+                'user_id' => $user_id
             ]);
             return $this->sendResponse($file, 'success in create file');
         }
@@ -107,5 +110,10 @@ class FileController extends BaseController
 
     }
 
+    public function myCollection()
+    {
+       // $user_id = Auth::id() ;
+        return $this->sendResponse(new CollectionResource([]) , 'success') ;
+    }
 
 }

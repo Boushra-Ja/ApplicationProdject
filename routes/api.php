@@ -72,9 +72,9 @@ Route::get('OwnerToCollection', [
 /////boshra
 //create && delete && display file && check_in && check_out
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::resource('file' , FileController::class)->except('edit' , 'create') ;
     Route::post('file/check_in/{id}' , [FileController::class , 'check_in']) ;
     Route::post('file/check_out/{id}' , [FileController::class , 'check_out']) ;
+    Route::resource('file' , FileController::class)->except('edit' , 'create') ;
+    Route::get('mycollection', [FileController::class ,'myCollection']);
 
 });
-
