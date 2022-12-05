@@ -27,6 +27,7 @@ Route::prefix("collection")->group(function () {
         Route::post('show_my_collection_file', [App\Http\Controllers\CollectionController::class, 'show_my_collection_file']);
         Route::post('show_all_users_not_in_collection', [App\Http\Controllers\CollectionController::class, 'show_all_users_not_in_collection']);
         Route::post('show_all_users_in_collection', [App\Http\Controllers\CollectionController::class, 'show_all_users_in_collection']);
+        Route::get('show_all_collection', [App\Http\Controllers\CollectionController::class, 'show_all_collection']);
 
 
     });

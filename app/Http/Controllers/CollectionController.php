@@ -166,6 +166,13 @@ class CollectionController extends Controller
         return response()->json(user_collection::collection($user_collection), 200);
     }
 
+    public function show_all_collection()
+    {
+        $user_collection = UserCollection::where('user_id', Auth::id())->where('property', 'user')->get();
+
+        return response()->json(user_collection::collection($user_collection), 200);
+    }
+
     public function show_my_collection_file(Request $request)
     {
 
