@@ -18,7 +18,7 @@ class PublicCollection
      */
     public function handle(Request $request, Closure $next)
     {
-        if ($request->status == "عامة")
+        if ($request->status == "public")
             return $next($request);
         else {
             $has_user = UserCollection::where('collection_id', '=', $request->collection_id)->where('user_id', '=', $request->user_id)->first();
