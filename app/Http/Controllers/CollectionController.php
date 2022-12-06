@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\all_collection_resource;
 use App\Http\Resources\File_collection_resource;
 use App\Http\Resources\user_collection;
 use App\Models\Collection;
@@ -15,6 +16,7 @@ use App\Models\UserCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use PhpParser\Node\Stmt\While_;
+use function Sodium\add;
 
 class CollectionController extends Controller
 {
@@ -168,29 +170,38 @@ class CollectionController extends Controller
 
     public function show_all_collection()
     {
+
         $user_collection = UserCollection::where('user_id', Auth::id())->where('property', 'user')->get();
 
-        return response()->json(user_collection::collection($user_collection), 200);
+        $all_collection=all_collection_resource::make($user_collection);
+
+
+        return response()->json($all_collection, 200);
     }
 
-    public function show_my_collection_file(Request $request)
+    public function show_my_collection_file($collection_id)
     {
 
-        $my_collection_file = CollectionFile::where('collection_id', $request->collection_id)->get();
+        $my_collection_file = CollectionFile::where('collection_id', $collection_id)->get();
         return response()->json(File_collection_resource::collection($my_collection_file), 200);
     }
 
-    public function show_all_users_not_in_collection(Request $request)
+    public function show_all_users_not_in_collection($collection_id)
     {
-        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $request->collection_id)->get('user_id'))->get('id');
+        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $collection_id)->get('user_id'))->get('id');
         $users = User::whereNotIn('id', $user_collection)->get();
         return $users;
     }
 
-    public function show_all_users_in_collection(Request $request)
+    public function show_all_users_in_collection($collection_id)
     {
-        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $request->collection_id)->where('property','user')->get('user_id'))->get();
+        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $collection_id)->where('property','user')->get('user_id'))->get();
         return $user_collection;
+    }
+
+    public function all_file_not_in_collection($collection_id){
+        $files=File::whereNotIn('id',CollectionFile::where('collection_id',$collection_id)->get('file_id'))->get();
+        return $files;
     }
 
 
