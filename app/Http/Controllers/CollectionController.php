@@ -200,7 +200,7 @@ class CollectionController extends Controller
     }
 
     public function all_file_not_in_collection($collection_id){
-        $files=File::whereNotIn('id',CollectionFile::where('collection_id',$collection_id)->get('file_id'))->get();
+        $files=File::whereNotIn('id',CollectionFile::where('collection_id',$collection_id)->get('file_id'))->where('owner_id',Auth::id())->get();
         return $files;
     }
 
