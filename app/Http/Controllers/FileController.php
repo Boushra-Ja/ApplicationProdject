@@ -46,8 +46,9 @@ class FileController extends BaseController
         $user_id = Auth::id();
         if (File::where('name', $newfileName)->first()) {
             return $this->sendErrors([], 'the file name is exist ');
-        } else {
-            $request->file->move(public_path('uploads\files'), $newfileName);
+        } else
+        {
+            $request->file->move(public_path('uploads\files\hh'), $newfileName);
             $file = File::create([
                 'name' => $newfileName,
                 'status_id' => FileStatus::where('status', 'حر')->value('id'),
@@ -83,7 +84,7 @@ class FileController extends BaseController
         return $this->sendErrors('error', 'error in delete file');
     }
 
-    public function check_in($id)
+    public function check_in($id , $user_id)
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
@@ -96,7 +97,7 @@ class FileController extends BaseController
             FileOperation::create([
 
                 'file_id' => $id ,
-                'user_id' => Auth::id() ,
+                'user_id' => $user_id,//Auth::id() ,
                 'op_id' => OperationType::where('type' , 'حجز')->value('id')
             ]);
 
@@ -107,7 +108,7 @@ class FileController extends BaseController
 
     }
 
-    public function check_out($id)
+    public function check_out($id , $user_id)
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'محجوز')->value('id')) {
@@ -120,7 +121,7 @@ class FileController extends BaseController
             FileOperation::create([
 
                 'file_id' => $id ,
-                'user_id' => Auth::id() ,
+                'user_id' =>  $user_id,// Auth::id() ,
                 'op_id' => OperationType::where('type' , 'الغاء حجز')->value('id')
             ]);
             return $this->sendResponse('', 'check out success');

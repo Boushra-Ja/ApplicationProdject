@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 /////bayan
 Route::prefix("collection")->group(function () {
 
-    Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::group(['middleware' => ['auth:sanctum',  'logroute']], function () {
 
         Route::post('creat', [App\Http\Controllers\CollectionController::class, 'store']);
         Route::get('show_my_collection', [App\Http\Controllers\CollectionController::class, 'show_my_collection']);
@@ -32,7 +32,7 @@ Route::prefix("collection")->group(function () {
 
     });
 
-    Route::group(['middleware' => ['public_collection']], function () {
+    Route::group(['middleware' => ['public_collection' , 'logroute']], function () {
 
         Route::post('add_file_to_collection', [App\Http\Controllers\CollectionController::class, 'add_file_to_collection']);
         Route::post('delete_file_from_collection', [App\Http\Controllers\CollectionController::class, 'delete_file_from_collection']);
@@ -40,7 +40,7 @@ Route::prefix("collection")->group(function () {
     });
 
 
-    Route::group(['middleware' => ['Collection_owner']], function () {
+    Route::group(['middleware' => ['Collection_owner' , 'logroute']], function () {
 
         Route::post('add_user_to_collection', [App\Http\Controllers\CollectionController::class, 'add_user_to_collection']);
         Route::post('delete_user_from_collection', [App\Http\Controllers\CollectionController::class, 'delete_user_from_collection']);
@@ -78,9 +78,9 @@ Route::get('OwnerToCollection', [
 /////boshra
 //create && delete && display file && check_in && check_out
 Route::group(['middleware' => ['auth:sanctum' , 'logroute']], function () {
-    Route::post('file/check_in/{id}' , [FileController::class , 'check_in']) ;
-    Route::post('file/check_out/{id}' , [FileController::class , 'check_out']) ;
     Route::resource('file' , FileController::class)->except('edit' , 'create') ;
     Route::get('mycollection', [FileController::class ,'myCollection']);
 
 });
+Route::post('file/check_in/{id}/{user_id}' , [FileController::class , 'check_in']) ;
+Route::post('file/check_out/{id}/{user_id}' , [FileController::class , 'check_out']) ;
