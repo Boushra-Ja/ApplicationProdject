@@ -204,8 +204,8 @@ class CollectionController extends Controller
         return $files;
     }
 
-    public function all_file_in_collection($collection_id){
-        $files=File::whereIn('id',CollectionFile::where('collection_id',$collection_id)->get('file_id'))->get();
+    public function all_file_to_reserve(){
+        $files=File::whereIn('id',CollectionFile::whereIn('collection_id',UserCollection::where('user_id',Auth::id())->get('collection_id'))->get('file_id'))->get();
         return $files;
     }
 
