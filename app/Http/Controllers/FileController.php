@@ -12,20 +12,31 @@ use App\Models\FileOperation;
 use App\Models\FileStatus;
 use App\Models\OperationType;
 use App\Models\UserCollection;
+use App\Repository\IFileRepository;
 use Illuminate\Support\Facades\Auth;
 
 class FileController extends BaseController
 {
 
+    private IFileRepository $file_repo ;
+
+
+    public function __construct(IFileRepository $file_repo)
+    {
+        $this->file_repo = $file_repo ;
+    }
+
+
     public function index()
     {
-        $user_id = Auth::id();
-        $files = File::where('owner_id', $user_id)->get();
+
+        $files = $this->file_repo->all_files() ;
         if ($files) {
             return $this->sendResponse(FileResource::collection($files), "this is all files");
         }
         return $this->sendErrors([], 'error in retrived files');
     }
+
 
 
     public function store(StoreFileRequest $request)
