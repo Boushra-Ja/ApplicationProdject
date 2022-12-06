@@ -20,15 +20,19 @@ class PublicCollection
     public function handle(Request $request, Closure $next)
     {
 
-        $status=Collection::where('id', $request->collection_id)->value('status');
+
+        $status = Collection::where('id', $request->collection_id)->value('status');
         if ($status == "public")
             return $next($request);
         else {
-            $has_user = UserCollection::where('collection_id', $request->collection_id)->where('user_id', $request->user_id)->first();
+            $has_user = UserCollection::where('collection_id', $request->collection_id)->where('user_id', Auth::id())->first();
+
             $collection = UserCollection::where('collection_id', $request->collection_id)->where('property', 'owner')->value('user_id');
+
             if (Auth::id() == $collection && $has_user) {
                 return $next($request);
             }
+            return response()->json("false");
 
         }
     }
