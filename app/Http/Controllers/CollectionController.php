@@ -204,5 +204,10 @@ class CollectionController extends Controller
         return $files;
     }
 
+    public function all_file_in_collection($collection_id){
+        $files=File::whereIn('id',CollectionFile::where('collection_id',$collection_id)->get('file_id'))->get();
+        return $files;
+    }
+
 
 }

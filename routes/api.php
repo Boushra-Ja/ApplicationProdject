@@ -29,6 +29,7 @@ Route::prefix("collection")->group(function () {
         Route::get('show_all_users_in_collection/{collection_id}', [App\Http\Controllers\CollectionController::class, 'show_all_users_in_collection']);
         Route::get('show_all_collection', [App\Http\Controllers\CollectionController::class, 'show_all_collection']);
         Route::get('all_file_not_in_collection/{collection_id}', [App\Http\Controllers\CollectionController::class, 'all_file_not_in_collection']);
+        Route::get('all_file_in_collection/{collection_id}', [App\Http\Controllers\CollectionController::class, 'all_file_in_collection']);
 
 
     });
