@@ -66,6 +66,7 @@ class Kernel extends HttpKernel
         'Role' => \App\Http\Middleware\CheckFile::class,
         'Collection_owner' => \App\Http\Middleware\collectionOwner::class,
         'public_collection' => \App\Http\Middleware\PublicCollection::class,
+        'logroute' => \App\Http\Middleware\LogRoute::class,
 
     ];
 }

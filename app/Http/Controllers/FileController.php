@@ -12,20 +12,31 @@ use App\Models\FileOperation;
 use App\Models\FileStatus;
 use App\Models\OperationType;
 use App\Models\UserCollection;
+use App\Repository\IFileRepository;
 use Illuminate\Support\Facades\Auth;
 
 class FileController extends BaseController
 {
 
+    private IFileRepository $file_repo ;
+
+
+    public function __construct(IFileRepository $file_repo)
+    {
+        $this->file_repo = $file_repo ;
+    }
+
+
     public function index()
     {
-        $user_id = Auth::id();
-        $files = File::where('owner_id', $user_id)->get();
+
+        $files = $this->file_repo->all_files() ;
         if ($files) {
             return $this->sendResponse(FileResource::collection($files), "this is all files");
         }
         return $this->sendErrors([], 'error in retrived files');
     }
+
 
 
     public function store(StoreFileRequest $request)
@@ -35,8 +46,9 @@ class FileController extends BaseController
         $user_id = Auth::id();
         if (File::where('name', $newfileName)->first()) {
             return $this->sendErrors([], 'the file name is exist ');
-        } else {
-            $request->file->move(public_path('uploads\files'), $newfileName);
+        } else
+        {
+            $request->file->move(public_path('uploads\files\hh'), $newfileName);
             $file = File::create([
                 'name' => $newfileName,
                 'status_id' => FileStatus::where('status', 'حر')->value('id'),
@@ -65,14 +77,14 @@ class FileController extends BaseController
 
     public function destroy($id)
     {
-        if (File::where('id', $id)->where('status_id', FileStatus::where('status', 'حر')->value('id'))) {
+        if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
             File::where('id', $id)->delete();
             return $this->sendResponse('', 'the file deleted successfully');
         }
         return $this->sendErrors('error', 'error in delete file');
     }
 
-    public function check_in($id)
+    public function check_in($id , $user_id)
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
@@ -85,7 +97,7 @@ class FileController extends BaseController
             FileOperation::create([
 
                 'file_id' => $id ,
-                'user_id' => Auth::id() ,
+                'user_id' => $user_id,//Auth::id() ,
                 'op_id' => OperationType::where('type' , 'حجز')->value('id')
             ]);
 
@@ -96,7 +108,7 @@ class FileController extends BaseController
 
     }
 
-    public function check_out($id)
+    public function check_out($id , $user_id)
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'محجوز')->value('id')) {
@@ -105,6 +117,13 @@ class FileController extends BaseController
                     'status_id' => FileStatus::where('status', 'حر')->value('id')
                 ]
             );
+
+            FileOperation::create([
+
+                'file_id' => $id ,
+                'user_id' =>  $user_id,// Auth::id() ,
+                'op_id' => OperationType::where('type' , 'الغاء حجز')->value('id')
+            ]);
             return $this->sendResponse('', 'check out success');
         }
         return $this->sendErrors('error', 'the file not rerserved');
