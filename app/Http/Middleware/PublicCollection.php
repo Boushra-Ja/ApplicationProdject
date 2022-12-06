@@ -22,13 +22,12 @@ class PublicCollection
         if ($request->status == "public")
             return $next($request);
         else {
-            $has_user = UserCollection::where('collection_id', '=', $request->collection_id)->where('user_id', '=', $request->user_id)->first();
-            $collection=UserCollection::where('collection_id','=', $request->collection_id)->where('property','owner')->value('user_id');
-            if (Auth::id() == $collection && $has_user) {
+            $has_user = UserCollection::where('collection_id', $request->collection_id)->where('user_id', $request->user_id)->first();
+            $collection = UserCollection::where('collection_id', $request->collection_id)->where('property', 'owner')->value('user_id');
+            if (Auth::id() == $collection && !$has_user) {
                 return $next($request);
             }
-            else
-                return "Erorr";
+
         }
     }
 }

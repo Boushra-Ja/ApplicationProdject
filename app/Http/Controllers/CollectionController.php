@@ -52,7 +52,7 @@ class CollectionController extends Controller
         }
     }
 
-    public function add_file_to_collection($request)
+    public function add_file_to_collection(Request $request)
     {
         $collection_file = CollectionFile::create([
             'collection_id' => $request->collection_id,
