@@ -52,7 +52,7 @@ class CollectionController extends Controller
         }
     }
 
-    public function add_file_to_collection($request)
+    public function add_file_to_collection(Request $request)
     {
         $collection_file = CollectionFile::create([
             'collection_id' => $request->collection_id,
@@ -68,7 +68,7 @@ class CollectionController extends Controller
 
     }
 
-    public function delete_file_from_collection($request)
+    public function delete_file_from_collection(Request $request)
     {
 
         $collection_file = CollectionFile::where('collection_id', '=', $request->collection_id)->where('file_id', '=', $request->file_id)->first()->delete();
@@ -200,7 +200,7 @@ class CollectionController extends Controller
     }
 
     public function all_file_not_in_collection($collection_id){
-        $files=File::whereNotIn('id',CollectionFile::where('collection_id',$collection_id)->get('file_id'))->get();
+        $files=File::whereNotIn('id',CollectionFile::where('collection_id',$collection_id)->get('file_id'))->where('owner_id',Auth::id())->get();
         return $files;
     }
 

@@ -31,7 +31,6 @@ Route::prefix("collection")->group(function () {
         Route::get('all_file_not_in_collection/{collection_id}', [App\Http\Controllers\CollectionController::class, 'all_file_not_in_collection']);
         Route::get('all_file_to_reserve', [App\Http\Controllers\CollectionController::class, 'all_file_to_reserve']);
 
-
     });
 
     Route::group(['middleware' => ['public_collection' , 'logroute']], function () {
@@ -49,7 +48,6 @@ Route::prefix("collection")->group(function () {
         Route::post('destroy', [App\Http\Controllers\CollectionController::class, 'destroy']);
 
     });
-
 
 });
 
