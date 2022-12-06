@@ -86,3 +86,5 @@ Route::group(['middleware' => ['auth:sanctum' , 'logroute']], function () {
 });
 Route::post('file/check_in/{id}/{user_id}' , [FileController::class , 'check_in']) ;
 Route::post('file/check_out/{id}/{user_id}' , [FileController::class , 'check_out']) ;
+//Route::get('admin/files', [FileController::class ,'admin_files']);
+Route::post('file/check_many_files' , [FileController::class , 'check_many_files']) ;
