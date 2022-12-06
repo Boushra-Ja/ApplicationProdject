@@ -48,7 +48,7 @@ class FileController extends BaseController
             return $this->sendErrors([], 'the file name is exist ');
         } else
         {
-            $request->file->move(public_path('uploads\files\hh'), $newfileName);
+            $request->file->move(public_path('uploads\files\jj'), $newfileName);
             $file = File::create([
                 'name' => $newfileName,
                 'status_id' => FileStatus::where('status', 'حر')->value('id'),

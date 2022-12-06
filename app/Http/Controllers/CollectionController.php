@@ -68,7 +68,7 @@ class CollectionController extends Controller
 
     }
 
-    public function delete_file_from_collection($request)
+    public function delete_file_from_collection(Request $request)
     {
 
         $collection_file = CollectionFile::where('collection_id', '=', $request->collection_id)->where('file_id', '=', $request->file_id)->first()->delete();
