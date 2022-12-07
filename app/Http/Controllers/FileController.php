@@ -169,10 +169,9 @@ class FileController extends BaseController
             foreach ($ids as  $id) {
                 if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'محجوز')->value('id')) {
                     DB::rollback() ;
-                    throw new Exception('file ' . $id ." is reserved" ) ;
+                    throw new Exception('error') ;
                 }
                 FileController::check_in($id , $user_id) ;
-
             }
 
             DB::commit() ;
