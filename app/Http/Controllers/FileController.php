@@ -8,6 +8,8 @@ use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\UpdateFileRequest;
 use App\Http\Resources\CollectionResource;
 use App\Http\Resources\FileResource;
+use App\Http\Resources\user_collection;
+use App\Models\Collection;
 use App\Models\CollectionFile;
 use App\Models\FileOperation;
 use App\Models\FileStatus;
@@ -18,6 +20,9 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\File as FacadesFile;
+use Illuminate\Support\Facades\Storage;
 
 class FileController extends BaseController
 {
@@ -48,10 +53,16 @@ class FileController extends BaseController
 
         $newfileName = $request->name . '.' . $request->file->extension();
         $user_id = Auth::id();
+
         if (File::where('name', $newfileName)->first()) {
             return $this->sendErrors([], 'the file name is exist ');
         } else {
-            $request->file->move(public_path('uploads\files'), $newfileName);
+            ///storage file in public folder
+            $res = $request->file->storeAs('files', $newfileName, 'my_files');
+            if (!$res) {
+                return $this->sendErrors('error', "error in storage file");
+            }
+            ///storage file in DB
             $file = File::create([
                 'name' => $newfileName,
                 'status_id' => FileStatus::where('status', 'حر')->value('id'),
@@ -59,44 +70,78 @@ class FileController extends BaseController
                 'user_id' => $user_id
             ]);
 
-            FileOperation::create([
+            if(!$file)
+            {
+                return $this->sendErrors('error', 'errror in storage file');
+            }
 
+            ////storage operation in DB
+            $f_op = FileOperation::create([
                 'file_id' => File::where('name', $newfileName)->value('id'),
                 'user_id' => $user_id,
                 'op_id' => OperationType::where('type', 'إضافة')->value('id')
             ]);
 
+            if(!$f_op)
+            {
+                return $this->sendErrors('error', 'error in storage operation on file');
+
+            }
             return $this->sendResponse($file, 'success in create file');
         }
     }
 
 
-
-    public function show(File $file)
+    public function update($id, Request $request)
     {
-        //
+        ////update file in public folder
+        $image_name = File::where('id', $id)->value('name');
+        $res = $request->file->storeAs('files', $image_name, 'my_files');
+
+        if (!$res) {
+            return $this->sendErrors('error', "error in storage file");
+        }
+
+        ///update file in DB
+        $file = File::where('id', $id)->first();
+        $file->update([
+            'updated_at' => Date::now()
+        ]);
+
+        ///storage operation in DB
+        $op_f = FileOperation::create([
+            'file_id' => $id,
+            'user_id' => Auth::id(),
+            'op_id' => OperationType::where('type', 'تعديل')->value('id')
+        ]);
+        if(!$op_f)
+        {
+            return $this->sendErrors('error', "error in storage operation on file");
+        }
+
+        return $this->sendResponse(File::where('id', $request->id)->get(), 'success in create file');
     }
 
 
-
-
-    public function update(UpdateFileRequest $request, File $file)
-    {
-        //
-    }
-
-
-    public function destroy($id)
+    public function destroy($id , $user_id)
     {
         $user_id = Auth::id();
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
-            File::where('id', $id)->delete();
-            FileOperation::create([
+            ///delete file from public folder
+            $name = File::where('id', $id)->value('name');
+            $path = public_path('uploads/files/' . $name);
+            FacadesFile::delete($path);
 
+            ///delete file from DB
+            File::where('id', $id)->delete();
+
+            ///storage operation in DB
+            FileOperation::create([
                 'file_id' => $id,
                 'user_id' => $user_id,
                 'op_id' => OperationType::where('type', 'حذف')->value('id')
             ]);
+
             return $this->sendResponse('', 'the file deleted successfully');
         }
         return $this->sendErrors('error', 'error in delete file');
@@ -163,24 +208,51 @@ class FileController extends BaseController
 
     public function check_many_files(Request $request)
     {
-        $user_id = Auth::id() ;
+        $user_id = Auth::id();
         $ids = $request->ids;
-        DB::transaction(function () use ($ids ,  $user_id){
+        DB::transaction(function () use ($ids,  $user_id) {
             foreach ($ids as  $id) {
                 if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'محجوز')->value('id')) {
-                    DB::rollback() ;
-                    throw new Exception('error') ;
+                    DB::rollback();
+                    throw new Exception('error');
                 }
-                FileController::check_in($id , $user_id) ;
+                FileController::check_in($id, $user_id);
             }
 
-            DB::commit() ;
+            DB::commit();
         });
-        return $this->sendResponse("success" , "All files are reserved");
+        return $this->sendResponse("success", "All files are reserved");
     }
 
     public function admin_files()
     {
-        return $this->sendResponse(FileResource::collection(File::all()) , 'success' );
+        return $this->sendResponse(FileResource::collection(File::all()), 'success');
+    }
+
+    public function admin_collections()
+    {
+        return $this->sendResponse(user_collection::collection(Collection::all()), 'success');
     }
 }
+/*
+ou can create a new storage disc in config/filesystems.php
+'public_uploads' => [
+    'driver' => 'local',
+    'root'   => public_path() . '/uploads',
+],
+
+And store files like this:
+
+if(!Storage::disk('public_uploads')->put($path, $file_content)) {
+    return false;
+}
+
+ $image_path = public_path('uploads\files\\' . $image_name);
+        Storage::delete($image_name) ;
+        dd($image_path);
+        if (FacadesFile::exists($image_path)) {
+            FacadesFile::delete($image_path);  // or unlink($filename);
+        }
+*/
+//C:\Users\boshra hamze\laravel\application-project\public\uploads\files\uu.pdf
+//C:\Users\boshra hamze\laravel\application-project\public\uploads\files\uu.pdf
