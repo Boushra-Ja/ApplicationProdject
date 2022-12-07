@@ -13,14 +13,18 @@ use App\Models\File;
 use App\Models\FileStatus;
 use App\Models\User;
 use App\Models\UserCollection;
+use App\Repository\ICollectionRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CollectionController extends Controller
 {
 
-    public function __construct()
+    public ICollectionRepository $ICollectionRepository;
+
+    public function __construct(ICollectionRepository $ICollectionRepository)
     {
+        $this->ICollectionRepository = $ICollectionRepository;
         $this->middleware(["auth:sanctum"])->only(["add_user_to_collection", "delete_user_from_collection", "destroy", "add_file_to_collection", "delete_file_from_collection"]);
     }
 
@@ -160,28 +164,14 @@ class CollectionController extends Controller
 
     public function show_my_collection()
     {
-        $user_collection = UserCollection::where('user_id', Auth::id())->where('property', 'owner')->get();
-
+        $user_collection =$this->ICollectionRepository->I_show_my_collection();
         return response()->json(user_collection::collection($user_collection), 200);
     }
 
     public function show_all_collection()
     {
 
-        $user_collection = Collection::whereIn('id', UserCollection::where('user_id', Auth::id())->where('property', 'user')->get('collection_id'))->get();
-        $public_collection = Collection::where('status', 'public')->first();
-
-        //  $all_collection=all_collection_resource::make($user_collection);
-
-        $a = 0;
-        $arr = array();
-        $arr[$a] = $public_collection;
-        $a = $a + 1;
-        foreach ($user_collection as $item) {
-            $arr[$a] = $item;
-            $a = $a + 1;
-        }
-
+        $arr = $this->ICollectionRepository->I_show_all_collection();
 
         return response()->json($arr, 200);
     }
@@ -189,52 +179,32 @@ class CollectionController extends Controller
     public function show_my_collection_file($collection_id)
     {
 
-        $my_collection_file = CollectionFile::where('collection_id', $collection_id)->get();
+        $my_collection_file = $this->ICollectionRepository->I_show_my_collection_file($collection_id);
         return response()->json(File_collection_resource::collection($my_collection_file), 200);
     }
 
     public function show_all_users_not_in_collection($collection_id)
     {
-        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $collection_id)->get('user_id'))->get('id');
-        $users = User::whereNotIn('id', $user_collection)->get();
+        $users = $this->ICollectionRepository->I_show_all_users_not_in_collection($collection_id);
         return $users;
     }
 
     public function show_all_users_in_collection($collection_id)
     {
-        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $collection_id)->where('property', 'user')->get('user_id'))->get();
+        $user_collection = $this->ICollectionRepository->I_show_all_users_in_collection($collection_id);
         return $user_collection;
     }
 
     public function all_file_not_in_collection($collection_id)
     {
-        $files = File::whereNotIn('id', CollectionFile::where('collection_id', $collection_id)->get('file_id'))->where('owner_id', Auth::id())->get();
+        $files = $this->ICollectionRepository->I_all_file_not_in_collection($collection_id);
         return $files;
     }
 
     public function all_file_to_reserve()
     {
-        $Collection = CollectionFile::whereIn('collection_id', UserCollection::where('user_id', Auth::id())->get('collection_id'))->get('file_id');
-        $files_collection = File::whereIn('id', $Collection)->get();
-        $files_owner_not_in_collection = File::whereNotIn('id', $Collection)->where('owner_id', Auth::id())->get();
-        $files_public = File::whereIn('id', CollectionFile::where('collection_id', Collection::where('status', 'public')->value('id'))->get('file_id'))->whereNotIn('id', $Collection)->whereNot('owner_id', Auth::id())->get();
 
-
-        $a = 0;
-        $arr = array();
-        foreach ($files_collection as $item) {
-            $arr[$a] = $item;
-            $a = $a + 1;
-        }
-        foreach ($files_owner_not_in_collection as $item) {
-            $arr[$a] = $item;
-            $a = $a + 1;
-        }
-        foreach ($files_public as $item) {
-            $arr[$a] = $item;
-            $a = $a + 1;
-        }
-
+        $arr = $this->ICollectionRepository->I_all_file_to_reserve();
         return response()->json(reserv_file::collection($arr), 200);
 
     }
