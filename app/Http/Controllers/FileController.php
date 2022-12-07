@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\API\BaseController;
 use App\Models\File;
 use App\Http\Requests\StoreFileRequest;
-use App\Http\Requests\UpdateFileRequest;
-use App\Http\Resources\CollectionResource;
 use App\Http\Resources\FileResource;
 use App\Http\Resources\user_collection;
 use App\Models\Collection;
@@ -14,6 +12,7 @@ use App\Models\CollectionFile;
 use App\Models\FileOperation;
 use App\Models\FileStatus;
 use App\Models\OperationType;
+use App\Models\User;
 use App\Models\UserCollection;
 use App\Repository\IFileRepository;
 use Exception;
@@ -22,7 +21,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\File as FacadesFile;
-use Illuminate\Support\Facades\Storage;
 
 class FileController extends BaseController
 {
@@ -70,8 +68,7 @@ class FileController extends BaseController
                 'user_id' => $user_id
             ]);
 
-            if(!$file)
-            {
+            if (!$file) {
                 return $this->sendErrors('error', 'errror in storage file');
             }
 
@@ -82,10 +79,8 @@ class FileController extends BaseController
                 'op_id' => OperationType::where('type', 'إضافة')->value('id')
             ]);
 
-            if(!$f_op)
-            {
+            if (!$f_op) {
                 return $this->sendErrors('error', 'error in storage operation on file');
-
             }
             return $this->sendResponse($file, 'success in create file');
         }
@@ -94,39 +89,45 @@ class FileController extends BaseController
 
     public function update($id, Request $request)
     {
-        ////update file in public folder
-        $image_name = File::where('id', $id)->value('name');
-        $res = $request->file->storeAs('files', $image_name, 'my_files');
 
-        if (!$res) {
-            return $this->sendErrors('error', "error in storage file");
+        if (File::where('id', $id)->value('status_id') == FileStatus::where('status', 'محجوز')->value('id') && File::where('id', $id)->where('user_id', $request->user_id)->first()) {
+
+            ////update file in public folder
+            $image_name = File::where('id', $id)->value('name');
+            $res = $request->file->storeAs('files', $image_name, 'my_files');
+
+            if (!$res) {
+                return $this->sendErrors('error', "error in storage file");
+            }
+
+            ///update file in DB
+            $file = File::where('id', $id)->first();
+            $file->update([
+                'updated_at' => Date::now()
+            ]);
+
+            ///storage operation in DB
+            $op_f = FileOperation::create([
+                'file_id' => $id,
+                'user_id' => Auth::id(),
+                'op_id' => OperationType::where('type', 'تعديل')->value('id')
+            ]);
+            if (!$op_f) {
+                return $this->sendErrors('error', "error in storage operation on file");
+            }
+
+            return $this->sendResponse(File::where('id', $request->id)->get(), 'success in create file');
         }
-
-        ///update file in DB
-        $file = File::where('id', $id)->first();
-        $file->update([
-            'updated_at' => Date::now()
-        ]);
-
-        ///storage operation in DB
-        $op_f = FileOperation::create([
-            'file_id' => $id,
-            'user_id' => Auth::id(),
-            'op_id' => OperationType::where('type', 'تعديل')->value('id')
-        ]);
-        if(!$op_f)
-        {
-            return $this->sendErrors('error', "error in storage operation on file");
-        }
-
-        return $this->sendResponse(File::where('id', $request->id)->get(), 'success in create file');
+        return $this->sendErrors('error', "There is no permission to edit the file");
     }
 
-
-    public function destroy($id , $user_id)
+    public function destroy($id, $user_id)
     {
         $user_id = Auth::id();
-        if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
+        if (
+            File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')
+            && File::where('id', $id)->where('owner_id', $user_id)->first()
+        ) {
             ///delete file from public folder
             $name = File::where('id', $id)->value('name');
             $path = public_path('uploads/files/' . $name);
@@ -234,25 +235,3 @@ class FileController extends BaseController
         return $this->sendResponse(user_collection::collection(Collection::all()), 'success');
     }
 }
-/*
-ou can create a new storage disc in config/filesystems.php
-'public_uploads' => [
-    'driver' => 'local',
-    'root'   => public_path() . '/uploads',
-],
-
-And store files like this:
-
-if(!Storage::disk('public_uploads')->put($path, $file_content)) {
-    return false;
-}
-
- $image_path = public_path('uploads\files\\' . $image_name);
-        Storage::delete($image_name) ;
-        dd($image_path);
-        if (FacadesFile::exists($image_path)) {
-            FacadesFile::delete($image_path);  // or unlink($filename);
-        }
-*/
-//C:\Users\boshra hamze\laravel\application-project\public\uploads\files\uu.pdf
-//C:\Users\boshra hamze\laravel\application-project\public\uploads\files\uu.pdf
