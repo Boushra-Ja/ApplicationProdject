@@ -163,19 +163,21 @@ class FileController extends BaseController
 
     public function check_many_files(Request $request)
     {
+        $user_id = Auth::id() ;
         $ids = $request->ids;
-        DB::transaction(function () use ($ids){
+        DB::transaction(function () use ($ids ,  $user_id){
             foreach ($ids as  $id) {
                 if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'محجوز')->value('id')) {
                     DB::rollback() ;
                     throw new Exception('file ' . $id ." is reserved" ) ;
                 }
-                FileController::check_in($id , Auth::id() ) ;
+                FileController::check_in($id , $user_id) ;
 
             }
 
             DB::commit() ;
         });
+        return $this->sendResponse("success" , "All files are reserved");
     }
 
     public function admin_files()
