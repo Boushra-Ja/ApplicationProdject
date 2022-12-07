@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\all_collection_resource;
 use App\Http\Resources\File_collection_resource;
+use App\Http\Resources\reserv_file;
 use App\Http\Resources\user_collection;
 use App\Models\Collection;
 use App\Http\Requests\StoreCollectionRequest;
@@ -105,31 +106,30 @@ class CollectionController extends Controller
     {
 
         $user_collection = UserCollection::where('collection_id', '=', $request->collection_id)->where('user_id', '=', $request->user_id)->first();
-            $a = 0;
-            $files = File::whereIn('id', CollectionFile::where('collection_id',$request->collection_id)->get('file_id'))->get();
+        $a = 0;
+        $files = File::whereIn('id', CollectionFile::where('collection_id', $request->collection_id)->get('file_id'))->get();
 
 
-            foreach ($files as $item) {
-                if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
+        foreach ($files as $item) {
+            if ("محجوز" == FileStatus::where('id', $item->status_id)->value('status')) {
 
-                    if ($item->user_id == $request->user_id) {
-                        $a = 1;
-                        break;
-                    }
-
+                if ($item->user_id == $request->user_id) {
+                    $a = 1;
+                    break;
                 }
+
             }
+        }
 
-            if ($a == 0) {
-                $user_collection1 = UserCollection::where('id', '=', $user_collection->id)->delete();
-                if ($user_collection1) {
-                    return "yse";
+        if ($a == 0) {
+            $user_collection1 = UserCollection::where('id', '=', $user_collection->id)->delete();
+            if ($user_collection1) {
+                return "yse";
 
-                } else {
-                    return "no";
-                }
+            } else {
+                return "no";
             }
-
+        }
 
 
     }
@@ -168,18 +168,18 @@ class CollectionController extends Controller
     public function show_all_collection()
     {
 
-        $user_collection = Collection::whereIn('id',UserCollection::where('user_id', Auth::id())->where('property', 'user')->get('collection_id'))->get();
-        $public_collection=Collection::where('status' , 'public' )->first();
+        $user_collection = Collection::whereIn('id', UserCollection::where('user_id', Auth::id())->where('property', 'user')->get('collection_id'))->get();
+        $public_collection = Collection::where('status', 'public')->first();
 
-      //  $all_collection=all_collection_resource::make($user_collection);
+        //  $all_collection=all_collection_resource::make($user_collection);
 
-        $a=0;
-        $arr=array();
-        $arr[$a]=$public_collection;
-        $a=$a+1;
-        foreach ($user_collection as $item){
-            $arr[$a]=$item;
-            $a=$a+1;
+        $a = 0;
+        $arr = array();
+        $arr[$a] = $public_collection;
+        $a = $a + 1;
+        foreach ($user_collection as $item) {
+            $arr[$a] = $item;
+            $a = $a + 1;
         }
 
 
@@ -202,38 +202,41 @@ class CollectionController extends Controller
 
     public function show_all_users_in_collection($collection_id)
     {
-        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $collection_id)->where('property','user')->get('user_id'))->get();
+        $user_collection = User::whereIn('id', UserCollection::where('collection_id', $collection_id)->where('property', 'user')->get('user_id'))->get();
         return $user_collection;
     }
 
-    public function all_file_not_in_collection($collection_id){
-        $files=File::whereNotIn('id',CollectionFile::where('collection_id',$collection_id)->get('file_id'))->where('owner_id',Auth::id())->get();
+    public function all_file_not_in_collection($collection_id)
+    {
+        $files = File::whereNotIn('id', CollectionFile::where('collection_id', $collection_id)->get('file_id'))->where('owner_id', Auth::id())->get();
         return $files;
     }
 
-    public function all_file_to_reserve(){
-        $Collection=CollectionFile::whereIn('collection_id',UserCollection::where('user_id',Auth::id())->get('collection_id'))->get('file_id');
-        $files_collection=File::whereIn('id',$Collection)->get();
-        $files_owner_not_in_collection=File::whereNotIn('id',$Collection)->where('owner_id',Auth::id())->get();
-        $files_public=File::whereIn('id',CollectionFile::where('collection_id',Collection::where('status','public')->value('id'))->get('file_id'))->whereNotIn('id',$Collection)->whereNot('owner_id',Auth::id())->get();
-       // $files=["collection"=>$files_collection,"owner"=>$files_owner_not_in_collection,'public'=>$files_public];
+    public function all_file_to_reserve()
+    {
+        $Collection = CollectionFile::whereIn('collection_id', UserCollection::where('user_id', Auth::id())->get('collection_id'))->get('file_id');
+        $files_collection = File::whereIn('id', $Collection)->get();
+        $files_owner_not_in_collection = File::whereNotIn('id', $Collection)->where('owner_id', Auth::id())->get();
+        $files_public = File::whereIn('id', CollectionFile::where('collection_id', Collection::where('status', 'public')->value('id'))->get('file_id'))->whereNotIn('id', $Collection)->whereNot('owner_id', Auth::id())->get();
 
-        $a=0;
-        $arr=array();
-        foreach ($files_collection as $item){
-            $arr[$a]=$item;
-            $a=$a+1;
+
+        $a = 0;
+        $arr = array();
+        foreach ($files_collection as $item) {
+            $arr[$a] = $item;
+            $a = $a + 1;
         }
-        foreach ($files_owner_not_in_collection as $item){
-            $arr[$a]=$item;
-            $a=$a+1;
+        foreach ($files_owner_not_in_collection as $item) {
+            $arr[$a] = $item;
+            $a = $a + 1;
         }
-        foreach ($files_public as $item){
-            $arr[$a]=$item;
-            $a=$a+1;
+        foreach ($files_public as $item) {
+            $arr[$a] = $item;
+            $a = $a + 1;
         }
 
-        return $arr;
+        return response()->json(reserv_file::collection($arr), 200);
+
     }
 
 
