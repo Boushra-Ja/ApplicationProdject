@@ -61,28 +61,14 @@ class FileController extends BaseController
             if (!$res) {
                 return $this->sendErrors('error', "error in storage file");
             }
+
             ///storage file in DB
-            $file = File::create([
-                'name' => $newfileName,
-                'status_id' => FileStatus::where('status', 'حر')->value('id'),
-                'owner_id' => $user_id,
-                'user_id' => $user_id
-            ]);
+            $file = $this->file_repo->storage_file($newfileName , $user_id) ;
 
             if (!$file) {
                 return $this->sendErrors('error', 'errror in storage file');
             }
 
-            ////storage operation in DB
-            $f_op = FileOperation::create([
-                'file_id' => File::where('name', $newfileName)->value('id'),
-                'user_id' => $user_id,
-                'op_id' => OperationType::where('type', 'إضافة')->value('id')
-            ]);
-
-            if (!$f_op) {
-                return $this->sendErrors('error', 'error in storage operation on file');
-            }
             return $this->sendResponse($file, 'success in create file');
         }
     }
@@ -153,59 +139,28 @@ class FileController extends BaseController
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
-            File::where('id', $id)->first()->update(
-                [
-                    'status_id' => FileStatus::where('status', 'محجوز')->value('id')
-                ]
-            );
+            $res = $this->file_repo->check_in_out($id , $user_id , 'محجوز' , 'حجز') ;
 
-            FileOperation::create([
-
-                'file_id' => $id,
-                'user_id' => $user_id, //Auth::id() ,
-                'op_id' => OperationType::where('type', 'حجز')->value('id')
-            ]);
-
-
-            return $this->sendResponse('', 'check in success');
+            if($res)
+                return $this->sendResponse('', 'check in success');
         }
         return $this->sendErrors('error', 'the file is already rerserved');
     }
+
 
     public function check_out($id, $user_id)
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'محجوز')->value('id')) {
-            File::where('id', $id)->first()->update(
-                [
-                    'status_id' => FileStatus::where('status', 'حر')->value('id')
-                ]
-            );
 
-            FileOperation::create([
+            $res = $this->file_repo->check_in_out($id , $user_id , 'حر' , 'الغاء حجز') ;
 
-                'file_id' => $id,
-                'user_id' =>  $user_id, // Auth::id() ,
-                'op_id' => OperationType::where('type', 'الغاء حجز')->value('id')
-            ]);
-            return $this->sendResponse('', 'check out success');
+            if($res)
+                return $this->sendResponse('', 'check out success');
         }
         return $this->sendErrors('error', 'the file not rerserved');
     }
 
-    public function myCollection()
-    {
-        $f = UserCollection::where('user_id', Auth::id())->get();
-        $i = 0;
-        // return $this->sendResponse(new CollectionResource([]) , 'success') ;
-        foreach ($f as $value) {
-            $files = CollectionFile::where('collection_id', $value['collection_id'])->get();
-
-            foreach ($files as $val) {
-                print($val);
-            }
-        }
-    }
 
 
     public function check_many_files(Request $request)

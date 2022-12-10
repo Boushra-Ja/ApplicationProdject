@@ -72,7 +72,6 @@ Route::get('OwnerToCollection', [
 /////boshra
 //create && delete && display file && check_in && check_out
 Route::group(['middleware' => ['auth:sanctum', 'logroute']], function () {
-    Route::get('mycollection', [FileController::class, 'myCollection']);
     Route::post('file/check_many_files', [FileController::class, 'check_many_files']);
     Route::post('file/update/{id}', [FileController::class, 'update']);
     Route::delete('file/{id}/{user_id}', [FileController::class, 'destroy']);
