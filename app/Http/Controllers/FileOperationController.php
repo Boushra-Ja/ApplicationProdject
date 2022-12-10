@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Report_resource;
 use App\Models\FileOperation;
 use App\Http\Requests\StoreFileOperationRequest;
 use App\Http\Requests\UpdateFileOperationRequest;
@@ -13,9 +14,13 @@ class FileOperationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function RepotFiles($file_id)
     {
-        //
+         //->where('user_id', auth::id())
+        $FileOperationModel=FileOperation::query()->where('file_id','=',$file_id)->orderBy('created_at', 'desc')->get();
+        return Report_resource::collection($FileOperationModel);
+
+       // return response()->json($FileOperationModel,200);
     }
 
     /**

@@ -236,4 +236,6 @@ class FileController extends BaseController
         $collections = Collection::all() ;
         return $this->sendResponse(CollectionAdmin::collection($collections), 'success');
     }
+
+
 }
