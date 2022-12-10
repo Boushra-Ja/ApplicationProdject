@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\FileOperationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -86,3 +87,4 @@ Route::post('file/check_out/{id}/{user_id}' , [FileController::class , 'check_ou
 
 Route::get('admin/files', [FileController::class ,'admin_files']);
 Route::get('admin/collection', [FileController::class ,'admin_collections']);
+Route::get('RepotFiles/{file_id}', [FileOperationController::class ,'RepotFiles']);
