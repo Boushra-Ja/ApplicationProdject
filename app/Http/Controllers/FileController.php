@@ -232,7 +232,8 @@ class FileController extends BaseController
 
     public function admin_collections()
     {
-        return $this->sendResponse(user_collection::collection(Collection::all()), 'success');
+        $collections = Collection::all() ;
+        return $this->sendResponse($collections, 'success');
     }
 
 
