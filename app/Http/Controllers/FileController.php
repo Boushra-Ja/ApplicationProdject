@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\API\BaseController;
 use App\Models\File;
 use App\Http\Requests\StoreFileRequest;
+use App\Http\Resources\CollectionAdmin;
 use App\Http\Resources\FileResource;
 use App\Http\Resources\user_collection;
 use App\Models\Collection;
@@ -233,6 +234,6 @@ class FileController extends BaseController
     public function admin_collections()
     {
         $collections = Collection::all() ;
-        return $this->sendResponse($collections, 'success');
+        return $this->sendResponse(CollectionAdmin::collection($collections), 'success');
     }
 }

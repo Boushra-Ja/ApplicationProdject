@@ -67,5 +67,7 @@ class Kernel extends HttpKernel
         'Collection_owner' => \App\Http\Middleware\collectionOwner::class,
         'public_collection' => \App\Http\Middleware\PublicCollection::class,
         'logroute' => \App\Http\Middleware\LogRoute::class,
+        'Admin' => \App\Http\Middleware\Admin::class,
+
     ];
 }
