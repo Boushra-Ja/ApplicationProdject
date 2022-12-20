@@ -24,10 +24,10 @@ class UserController extends Controller
         ]);
         $user = User::create([
             'name' => "name",
-         //   'phone_number'=>"99999999" ,
-           // 'image' => "image",
+          'phone_number'=>"99999999" ,
+         'image' => "image",
             'username' => $valid['username'],
-           // 'role' => "user",
+           'role' => "user",
             'email' => $valid['email'],
             'password_confirmation' => $valid['password_confirmation'],
             'password' => Hash::make($valid['password']),

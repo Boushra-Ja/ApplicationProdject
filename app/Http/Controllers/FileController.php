@@ -50,7 +50,7 @@ class FileController extends BaseController
     public function store(StoreFileRequest $request)
     {
 
-        $newfileName = $request->name . '.' . $request->file->extension();
+        $newfileName = uniqid()  .$request->name . '.' . $request->file->extension();
         $user_id = Auth::id();
 
         if (File::where('name', $newfileName)->first()) {

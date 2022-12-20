@@ -1,0 +1,61 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/Hamod?createDatabaseIfNotExist=true&userSSL=false&userJBDCCompliantTimezShift
+    username: root
+    password:
+    initialization-mode: always
+    platform: mysqlLL
+  jpa:
+
+              hibernate:
+                ddl-auto: create-drop
+              dialect: org.hibernate.dialect.MySQL8Dialect
+
+              show-sql: true
+#  security:
+#    user:
+#      name: admin
+#      password: admin
+file:
+  upload:
+    base-path: 'C:\Users\Lenovo\Downloads\springboot.todo-api\File_Upload'
+
+#logging:
+#  level:
+#    org:
+#      hibernate: info
+
+  #  jpa:
+  #          hibernate:
+  #            ddl-auto: create
+  #          show-sql: true
+  #          propertise:
+  #            hibernote:
+  #              formate_sql: true
+  #            dialect: org.hibernate.dialect.MySQL8Dialect
+  #    tomact:
+  #        max-wait: 20000
+  #        max-active: 50
+  #        max-idle: 20
+  #        min-idle: 15
+
+
+
+  #  spring.datasource.tomcat.initial-size=50
+  #  spring.datasource.tomcat.max-wait=
+  #  spring.datasource.tomcat.max-active=
+  #  spring.datasource.tomcat.max-idle=150
+  #  spring.datasource.tomcat.min-idle=8
+  #  spring.datasource.tomcat.default-auto-commit=true
+  #  jpa:
+#      hibernate:
+#        ddl-auto: update
+#      show-sql: true
+#      propertise:
+#        hibernote:
+#          formate_sql: true
+#        dialect: org.hibernate.dialect.MySQL8Dialect
+
+
+server:
+  port: 8096

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\FileOperationController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -87,3 +88,6 @@ Route::post('file/check_out/{id}/{user_id}', [FileController::class, 'check_out'
 
 ////test multi data base
 Route::get('product', [ProductController::class ,'allProduct']);
+
+
+Route::get('RepotFiles/{file_id}', [FileOperationController::class, 'RepotFiles']);
