@@ -24,10 +24,10 @@ class UserController extends Controller
         ]);
         $user = User::create([
             'name' => "name",
-            'phone_number'=>"99999999" ,
-            'image' => "image",
+         //   'phone_number'=>"99999999" ,
+           // 'image' => "image",
             'username' => $valid['username'],
-            'role' => "user",
+           // 'role' => "user",
             'email' => $valid['email'],
             'password_confirmation' => $valid['password_confirmation'],
             'password' => Hash::make($valid['password']),
@@ -44,7 +44,15 @@ class UserController extends Controller
         } else
             $user->image = '';
 
+
         $token = $user->createToken('ProductsTolken')->plainTextToken;
+
+//        if( !$valid['username'])
+//            return  response()->json([
+//                'message' => "The username is already exist",
+//
+//            ]);
+
         return response()->json([
             'user' => $user,
             'token' => $token,

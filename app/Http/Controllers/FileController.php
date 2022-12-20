@@ -5,19 +5,23 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\API\BaseController;
 use App\Models\File;
 use App\Http\Requests\StoreFileRequest;
-use App\Http\Requests\UpdateFileRequest;
-use App\Http\Resources\CollectionResource;
+use App\Http\Resources\CollectionAdmin;
 use App\Http\Resources\FileResource;
+use App\Http\Resources\user_collection;
+use App\Models\Collection;
 use App\Models\CollectionFile;
 use App\Models\FileOperation;
 use App\Models\FileStatus;
 use App\Models\OperationType;
+use App\Models\User;
 use App\Models\UserCollection;
 use App\Repository\IFileRepository;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\File as FacadesFile;
 
 class FileController extends BaseController
 {
@@ -48,55 +52,84 @@ class FileController extends BaseController
 
         $newfileName = $request->name . '.' . $request->file->extension();
         $user_id = Auth::id();
+
         if (File::where('name', $newfileName)->first()) {
             return $this->sendErrors([], 'the file name is exist ');
         } else {
-            $request->file->move(public_path('uploads\files'), $newfileName);
-            $file = File::create([
-                'name' => $newfileName,
-                'status_id' => FileStatus::where('status', 'حر')->value('id'),
-                'owner_id' => $user_id,
-                'user_id' => $user_id
-            ]);
+            ///storage file in public folder
+            $res = $request->file->storeAs('files', $newfileName, 'my_files');
+            if (!$res) {
+                return $this->sendErrors('error', "error in storage file");
+            }
 
-            FileOperation::create([
+            ///storage file in DB
+            $file = $this->file_repo->storage_file($newfileName , $user_id) ;
 
-                'file_id' => File::where('name', $newfileName)->value('id'),
-                'user_id' => $user_id,
-                'op_id' => OperationType::where('type', 'إضافة')->value('id')
-            ]);
+            if (!$file) {
+                return $this->sendErrors('error', 'errror in storage file');
+            }
 
             return $this->sendResponse($file, 'success in create file');
         }
     }
 
 
-
-    public function show(File $file)
+    public function update($id, Request $request)
     {
-        //
+
+        if (File::where('id', $id)->value('status_id') == FileStatus::where('status', 'محجوز')->value('id') && File::where('id', $id)->where('user_id', $request->user_id)->first()) {
+
+            ////update file in public folder
+            $image_name = File::where('id', $id)->value('name');
+            $res = $request->file->storeAs('files', $image_name, 'my_files');
+
+            if (!$res) {
+                return $this->sendErrors('error', "error in storage file");
+            }
+
+            ///update file in DB
+            $file = File::where('id', $id)->first();
+            $file->update([
+                'updated_at' => Date::now()
+            ]);
+
+            ///storage operation in DB
+            $op_f = FileOperation::create([
+                'file_id' => $id,
+                'user_id' => Auth::id(),
+                'op_id' => OperationType::where('type', 'تعديل')->value('id')
+            ]);
+            if (!$op_f) {
+                return $this->sendErrors('error', "error in storage operation on file");
+            }
+
+            return $this->sendResponse(File::where('id', $request->id)->get(), 'success in create file');
+        }
+        return $this->sendErrors('error', "There is no permission to edit the file");
     }
 
-
-
-
-    public function update(UpdateFileRequest $request, File $file)
-    {
-        //
-    }
-
-
-    public function destroy($id)
+    public function destroy($id, $user_id)
     {
         $user_id = Auth::id();
-        if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
-            File::where('id', $id)->delete();
-            FileOperation::create([
+        if (
+            File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')
+            && File::where('id', $id)->where('owner_id', $user_id)->first()
+        ) {
+            ///delete file from public folder
+            $name = File::where('id', $id)->value('name');
+            $path = public_path('uploads/files/' . $name);
+            FacadesFile::delete($path);
 
+            ///delete file from DB
+            File::where('id', $id)->delete();
+
+            ///storage operation in DB
+            FileOperation::create([
                 'file_id' => $id,
                 'user_id' => $user_id,
                 'op_id' => OperationType::where('type', 'حذف')->value('id')
             ]);
+
             return $this->sendResponse('', 'the file deleted successfully');
         }
         return $this->sendErrors('error', 'error in delete file');
@@ -106,81 +139,58 @@ class FileController extends BaseController
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'حر')->value('id')) {
-            File::where('id', $id)->first()->update(
-                [
-                    'status_id' => FileStatus::where('status', 'محجوز')->value('id')
-                ]
-            );
+            $res = $this->file_repo->check_in_out($id , $user_id , 'محجوز' , 'حجز') ;
 
-            FileOperation::create([
-
-                'file_id' => $id,
-                'user_id' => $user_id, //Auth::id() ,
-                'op_id' => OperationType::where('type', 'حجز')->value('id')
-            ]);
-
-
-            return $this->sendResponse('', 'check in success');
+            if($res)
+                return $this->sendResponse('', 'check in success');
         }
         return $this->sendErrors('error', 'the file is already rerserved');
     }
+
 
     public function check_out($id, $user_id)
     {
 
         if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'محجوز')->value('id')) {
-            File::where('id', $id)->first()->update(
-                [
-                    'status_id' => FileStatus::where('status', 'حر')->value('id')
-                ]
-            );
 
-            FileOperation::create([
+            $res = $this->file_repo->check_in_out($id , $user_id , 'حر' , 'الغاء حجز') ;
 
-                'file_id' => $id,
-                'user_id' =>  $user_id, // Auth::id() ,
-                'op_id' => OperationType::where('type', 'الغاء حجز')->value('id')
-            ]);
-            return $this->sendResponse('', 'check out success');
+            if($res)
+                return $this->sendResponse('', 'check out success');
         }
         return $this->sendErrors('error', 'the file not rerserved');
     }
 
-    public function myCollection()
-    {
-        $f = UserCollection::where('user_id', Auth::id())->get();
-        $i = 0;
-        // return $this->sendResponse(new CollectionResource([]) , 'success') ;
-        foreach ($f as $value) {
-            $files = CollectionFile::where('collection_id', $value['collection_id'])->get();
-
-            foreach ($files as $val) {
-                print($val);
-            }
-        }
-    }
 
 
     public function check_many_files(Request $request)
     {
-        $user_id = Auth::id() ;
+        $user_id = Auth::id();
         $ids = $request->ids;
-        DB::transaction(function () use ($ids ,  $user_id){
+        DB::transaction(function () use ($ids,  $user_id) {
             foreach ($ids as  $id) {
                 if (File::where('id', $id)->value('status_id') == FileStatus::where('status',  'محجوز')->value('id')) {
-                    DB::rollback() ;
-                    throw new Exception('error') ;
+                    DB::rollback();
+                    throw new Exception('error');
                 }
-                FileController::check_in($id , $user_id) ;
+                FileController::check_in($id, $user_id);
             }
 
-            DB::commit() ;
+            DB::commit();
         });
-        return $this->sendResponse("success" , "All files are reserved");
+        return $this->sendResponse("success", "All files are reserved");
     }
 
     public function admin_files()
     {
-        return $this->sendResponse(FileResource::collection(File::all()) , 'success' );
+        return $this->sendResponse(FileResource::collection(File::all()), 'success');
     }
+
+    public function admin_collections()
+    {
+        $collections = Collection::all() ;
+        return $this->sendResponse(CollectionAdmin::collection($collections), 'success');
+    }
+
+
 }
