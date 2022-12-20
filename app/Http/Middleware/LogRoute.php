@@ -20,12 +20,17 @@ class LogRoute
 
         $response = $next($request);
 
+
         if (app()->environment('local')) {
             $log = [
                 'URI' => $request->getUri(),
                 'METHOD' => $request->getMethod(),
                 'REQUEST_BODY' => $request->all(),
-                'RESPONSE' => $response->getContent()
+                'RESPONSE' => $response->getContent(),
+                'port'=> $request->getPort(),
+
+
+
             ];
 
             Log::info(json_encode($log));
